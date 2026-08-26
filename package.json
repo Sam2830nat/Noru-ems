@@ -1,0 +1,14 @@
+{
+  "name": "noru-ems",
+  "version": "1.0.0",
+  "description": "Noru Hotel Employee Management System",
+  "private": true,
+  "scripts": {
+    "start": "docker-compose up -d",
+    "noru:start": "docker-compose up --build",
+    "noru:stop": "docker-compose down",
+    "noru:clean": "docker-compose down -v --rmi all",
+    "backend:dev": "cd backend && npm run start:dev",
+    "frontend:dev": "cd frontend && npm run dev"
+  }
+}

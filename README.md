@@ -38,11 +38,8 @@ The entire application is completely containerized. The easiest way to run the p
 # Clone the repository and enter the directory
 cd Noru-ems
 
-# Build and start all services in detached mode
-docker-compose up --build -d
-
-# View the logs to ensure everything started correctly
-docker-compose logs -f
+# Build and start all services (Database, Backend, Frontend)
+npm run noru:start
 ```
 
 **Access Points:**
@@ -98,6 +95,15 @@ npm run dev
 ---
 
 ## 🛠 Available Commands
+
+### Root (`/package.json`)
+| Command | Description |
+|---|---|
+| `npm run noru:start` | Builds and starts all services (DB, Backend, Frontend) via Docker |
+| `npm run noru:stop` | Stops all running Docker containers |
+| `npm run noru:clean` | Stops all containers and aggressively removes volumes/images |
+| `npm run backend:dev` | Starts the NestJS server locally in watch mode |
+| `npm run frontend:dev` | Starts the Next.js server locally in watch mode |
 
 ### Backend (`/backend/package.json`)
 | Command | Description |
