@@ -1,0 +1,135 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EmployeeStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  HALF_DAY
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  VIEWER
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      UserRole @default(VIEWER)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([email])
+  @@map("users")
+}
+
+model Department {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  description String?
+  employees   Employee[]
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  @@map("departments")
+}
+
+model Role {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  description String?
+  employees   Employee[]
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  @@map("roles")
+}
+
+model Employee {
+  id             String          @id @default(cuid())
+  employeeNumber String          @unique @map("employee_number")
+  firstName      String          @map("first_name")
+  lastName       String          @map("last_name")
+  email          String          @unique
+  phone          String?
+  status         EmployeeStatus  @default(ACTIVE)
+  hireDate       DateTime        @map("hire_date") @db.Date
+  departmentId   String?         @map("department_id")
+  roleId         String?         @map("role_id")
+  department     Department?     @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  role           Role?           @relation(fields: [roleId], references: [id], onDelete: SetNull)
+  shifts         EmployeeShift[]
+  attendance     Attendance[]
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+
+  @@index([departmentId])
+  @@index([roleId])
+  @@index([status])
+  @@index([email])
+  @@map("employees")
+}
+
+model Shift {
+  id          String          @id @default(cuid())
+  name        String          @unique
+  startTime   String          @map("start_time")
+  endTime     String          @map("end_time")
+  isOvernight Boolean         @default(false) @map("is_overnight")
+  description String?
+  employees   EmployeeShift[]
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+
+  @@map("shifts")
+}
+
+model EmployeeShift {
+  id           String   @id @default(cuid())
+  employeeId   String   @map("employee_id")
+  shiftId      String   @map("shift_id")
+  assignedDate DateTime @map("assigned_date") @db.Date
+  employee     Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  shift        Shift    @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@unique([employeeId, assignedDate])
+  @@index([employeeId])
+  @@index([assignedDate])
+  @@index([shiftId])
+  @@map("employee_shifts")
+}
+
+model Attendance {
+  id         String           @id @default(cuid())
+  employeeId String           @map("employee_id")
+  workDate   DateTime         @map("work_date") @db.Date
+  checkIn    DateTime?        @map("check_in")
+  checkOut   DateTime?        @map("check_out")
+  status     AttendanceStatus @default(PRESENT)
+  notes      String?
+  employee   Employee         @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  createdAt  DateTime         @default(now()) @map("created_at")
+  updatedAt  DateTime         @updatedAt @map("updated_at")
+
+  @@unique([employeeId, workDate])
+  @@index([employeeId])
+  @@index([workDate])
+  @@index([status])
+  @@map("attendance")
+}
