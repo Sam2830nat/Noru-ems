@@ -3,6 +3,11 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD, APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { DepartmentsModule } from './modules/departments/departments.module';
+import { RolesModule } from './modules/roles/roles.module';
+import { ShiftsModule } from './modules/shifts/shifts.module';
+import { EmployeesModule } from './modules/employees/employees.module';
+import { AttendanceModule } from './modules/attendance/attendance.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
@@ -14,7 +19,11 @@ import { HealthController } from './common/health/health.controller';
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
     AuthModule,
-    // Domain modules will be added in Phase 3+
+    DepartmentsModule,
+    RolesModule,
+    ShiftsModule,
+    EmployeesModule,
+    AttendanceModule,
   ],
   controllers: [HealthController],
   providers: [
