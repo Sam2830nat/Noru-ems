@@ -8,6 +8,7 @@ import { RolesModule } from './modules/roles/roles.module';
 import { ShiftsModule } from './modules/shifts/shifts.module';
 import { EmployeesModule } from './modules/employees/employees.module';
 import { AttendanceModule } from './modules/attendance/attendance.module';
+import { ReportsModule } from './modules/reports/reports.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
@@ -24,6 +25,7 @@ import { HealthController } from './common/health/health.controller';
     ShiftsModule,
     EmployeesModule,
     AttendanceModule,
+    ReportsModule,
   ],
   controllers: [HealthController],
   providers: [
