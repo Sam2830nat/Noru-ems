@@ -1,35 +1,122 @@
-# Noru Hotel Employee Management System
+# Noru Hotel Employee Management System (EMS)
 
-A production-ready, full-stack Employee Management System built as a technical challenge for Noru Booking. It demonstrates senior-level engineering judgment, modular monolith architecture, robust relational data modeling, and a highly polished UI.
-
-## 🚀 Quick Start
-
-The entire application is containerized. You only need Docker installed.
-
-```bash
-# 1. Start the database, run migrations, seed data, and start the backend & frontend
-docker-compose up --build
-```
-
-**Access Points:**
-- **Frontend App:** [http://localhost:3000](http://localhost:3000)
-- **API Swagger Docs:** [http://localhost:3001/api/docs](http://localhost:3001/api/docs)
-
-**Demo Credentials:**
-- Email: `admin@norubooking.com`
-- Password: `admin123`
-
-*(The seed script automatically populates the database with 10 hotel employees, departments, roles, shifts, and 7 days of historical attendance data).*
+A production-ready, full-stack Employee Management System built as a technical challenge for Noru Booking. It demonstrates senior-level engineering judgment, modular monolith architecture, robust relational data modeling, and a highly polished modern UI.
 
 ---
 
-## 🏗 Architecture: Modular Monolith
+## 🏗 Architecture & Tech Stack
 
-**Backend:** NestJS (TypeScript, strict mode) + Prisma ORM + PostgreSQL
-**Frontend:** Next.js 14 (App Router) + Tailwind CSS v4 + Recharts
+### Architecture: Modular Monolith
+The application is structured as a **Modular Monolith**. 
+Microservices introduce distributed systems complexity (network latency, distributed transactions, independent deployments) that provides zero benefit at this scale. A modular monolith gives us strict domain isolation through explicit module boundaries (`Employees`, `Departments`, `Roles`, `Shifts`, `Attendance`, `Reports`). It ships faster, is easier to maintain, and allows future extraction of specific modules (e.g., Attendance becomes its own microservice) only when load or team size genuinely justifies it.
 
-**Why a modular monolith?**
-Microservices introduce distributed systems complexity (network latency, distributed transactions, independent deployments) that provides zero benefit at this scale. A modular monolith gives us the same domain isolation through strict module boundaries (Employees, Departments, Roles, Shifts, Attendance, Reports). It ships faster, is easier to maintain, and allows future extraction of specific modules (e.g., Attendance becomes its own microservice) only when load or team size justifies it.
+### Tech Stack
+**Backend (`/backend`)**
+* **Framework:** NestJS (TypeScript, Strict Mode)
+* **Database & ORM:** PostgreSQL + Prisma ORM v5
+* **Validation & Types:** `class-validator`, `class-transformer`
+* **Security & Auth:** Passport, JWT, bcryptjs
+* **Documentation:** Swagger / OpenAPI (`@nestjs/swagger`)
+
+**Frontend (`/frontend`)**
+* **Framework:** Next.js 14 (App Router)
+* **Language:** TypeScript
+* **Styling:** Tailwind CSS v4 (Custom Glassmorphism & Dark Theme)
+* **Data Fetching:** Axios (with custom JWT interceptors)
+* **Icons & Charts:** Lucide React, Recharts
+
+**Infrastructure**
+* **Containerization:** Docker & Docker Compose (Multi-stage builds)
+
+---
+
+## 🚀 How to Run (Docker)
+
+The entire application is completely containerized. The easiest way to run the project is using Docker Compose, which will spin up the database, automatically run migrations, seed the database, and start both the backend and frontend.
+
+```bash
+# Clone the repository and enter the directory
+cd Noru-ems
+
+# Build and start all services in detached mode
+docker-compose up --build -d
+
+# View the logs to ensure everything started correctly
+docker-compose logs -f
+```
+
+**Access Points:**
+- **Frontend Application:** [http://localhost:3000](http://localhost:3000)
+- **Backend API Base:** [http://localhost:3001/api/v1](http://localhost:3001/api/v1)
+- **API Swagger Docs:** [http://localhost:3001/api/docs](http://localhost:3001/api/docs)
+
+**Demo Credentials:**
+The automated seed script populates the database with 10 employees, departments, and 7 days of historical attendance data. You can log in using:
+- **Email:** `admin@norubooking.com`
+- **Password:** `admin123`
+
+---
+
+## 💻 How to Run (Local Development)
+
+If you prefer to run the applications locally without Docker (e.g., for active development):
+
+### 1. Database
+You must have a PostgreSQL instance running. If you want to use Docker just for the database:
+```bash
+docker-compose up postgres -d
+```
+
+### 2. Backend
+```bash
+cd backend
+
+# Install dependencies
+npm install
+
+# Run database migrations (creates tables)
+npm run migrate
+
+# Seed the database with demo data
+npm run db:seed
+
+# Start the NestJS server in watch mode
+npm run start:dev
+```
+
+### 3. Frontend
+```bash
+cd frontend
+
+# Install dependencies
+npm install
+
+# Start the Next.js development server
+npm run dev
+```
+
+---
+
+## 🛠 Available Commands
+
+### Backend (`/backend/package.json`)
+| Command | Description |
+|---|---|
+| `npm run start:dev` | Starts the NestJS API with hot-reload |
+| `npm run build` | Compiles the TypeScript application into `/dist` |
+| `npm run migrate` | Runs `prisma migrate dev` to apply schema changes |
+| `npm run migrate:deploy` | Applies migrations in production without resetting data |
+| `npm run db:seed` | Executes `prisma/seed.ts` to populate realistic hotel data |
+| `npm run db:studio` | Opens Prisma Studio UI at `localhost:5555` to view DB tables |
+| `npm run db:reset` | Drops the database, reapplies migrations, and runs the seed script |
+| `npm run test:e2e` | Runs end-to-end integration tests using Jest and Supertest |
+
+### Frontend (`/frontend/package.json`)
+| Command | Description |
+|---|---|
+| `npm run dev` | Starts the Next.js development server |
+| `npm run build` | Builds the Next.js application for production |
+| `npm run lint` | Runs ESLint to check for code quality issues |
 
 ---
 
@@ -66,14 +153,4 @@ The `GET /api/v1/reports/attendance` endpoint generates a daily Department Atten
 | **001** | Global API Envelope | All responses are wrapped in `{ success, data, meta }` via a NestJS Interceptor. All errors are normalized by a Global Exception Filter. |
 | **002** | `x-request-id` | A middleware injects a unique ID into every request and logs HTTP duration, making debugging in production much easier. |
 | **003** | Auth Separation | The `AuthController` handles login/JWT generation, but the `JwtStrategy` loads the user and strips the password before it reaches any endpoints. |
-| **004** | Tailwind v4 | Uses the latest Tailwind v4 compiler for zero-config CSS architecture and modern styling constraints. |
-
----
-
-## 📅 Next Steps / Future Improvements
-
-If given more than 1 day, the following would be added:
-1. **Multi-Tenancy (`hotel_id`)**: Inject a `hotel_id` into the JWT and enforce row-level security or global Prisma middlewares to isolate data for multiple properties.
-2. **Redis Caching**: Cache the attendance report output for 5 minutes per parameter set.
-3. **Leave Management**: Add a `leaves` table to distinguish between unexcused 'ABSENT' and approved PTO.
-4. **Unit Tests**: Full Jest coverage for the service-level business rules (e.g., verifying the check-in vs check-out time validation).
+| **004** | Docker Healthchecks | The backend waits for PostgreSQL to be explicitly `healthy` before attempting to run migrations, preventing crash-loops on cold starts. |
