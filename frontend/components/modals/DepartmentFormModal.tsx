@@ -54,7 +54,7 @@ export default function DepartmentFormModal({ isOpen, onClose, onSuccess, depart
       onSuccess();
       onClose();
     } catch (error: any) {
-      if (error.response?.data?.errors) {
+      if (error.response?.data?.errors?.length > 0) {
         const fieldErrors: Record<string, string> = {};
         error.response.data.errors.forEach((err: any) => {
           fieldErrors[err.field] = err.message;
