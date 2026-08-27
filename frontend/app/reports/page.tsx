@@ -4,7 +4,8 @@ import React, { useEffect, useState } from 'react';
 import api from '@/lib/api';
 import { DeptAttendanceSummary } from '@/lib/types';
 import { format, subDays } from 'date-fns';
-import { Calendar, Search, Download, ChevronDown, ChevronUp } from 'lucide-react';
+import { Calendar, Search, Download, ChevronDown, ChevronUp, FileText } from 'lucide-react';
+import ExportReportModal from '@/components/modals/ExportReportModal';
 
 export default function ReportsPage() {
   const [reports, setReports] = useState<DeptAttendanceSummary[]>([]);
@@ -14,6 +15,8 @@ export default function ReportsPage() {
   // Date state
   const [startDate, setStartDate] = useState(format(subDays(new Date(), 7), 'yyyy-MM-dd'));
   const [endDate, setEndDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   const fetchReports = async () => {
     setLoading(true);
@@ -68,9 +71,12 @@ export default function ReportsPage() {
             </button>
           </div>
         </div>
-        <button className="btn-secondary flex items-center gap-2">
-          <Download size={16} />
-          Export CSV
+        <button 
+          onClick={() => setIsExportModalOpen(true)}
+          className="btn-secondary flex items-center gap-2 border border-indigo-500/30 hover:border-indigo-500/60 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 transition-all shadow-lg shadow-indigo-500/10"
+        >
+          <FileText size={18} />
+          Export Report
         </button>
       </div>
 
@@ -93,36 +99,38 @@ export default function ReportsPage() {
                   onClick={() => setExpandedDept(isExpanded ? null : (dept.departmentId || 'unassigned'))}
                 >
                   <div className="flex items-center gap-6">
-                    <div>
-                      <h3 className="text-lg font-semibold text-white">{dept.departmentName}</h3>
-                      <p className="text-sm text-slate-400">{dept.totalEmployees} employees</p>
+                    <div className="w-48">
+                      <h3 className="text-xl font-bold text-white tracking-tight">{dept.departmentName}</h3>
+                      <p className="text-sm text-slate-400 mt-0.5">{dept.totalEmployees} employees</p>
                     </div>
-                    <div className="hidden sm:flex gap-4 items-center">
-                      <div className="text-center px-4 py-1 rounded bg-emerald-500/10 border border-emerald-500/20">
-                        <div className="text-xs text-emerald-400 font-medium">Present</div>
-                        <div className="text-lg font-bold text-emerald-100">{dept.totalPresentDays}</div>
+                    <div className="hidden sm:flex gap-3 items-center">
+                      <div className="flex flex-col items-center justify-center w-20 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 shadow-inner">
+                        <div className="text-[10px] uppercase tracking-wider text-emerald-400 font-semibold mb-1">Present</div>
+                        <div className="text-xl font-black text-emerald-100">{dept.totalPresentDays}</div>
                       </div>
-                      <div className="text-center px-4 py-1 rounded bg-red-500/10 border border-red-500/20">
-                        <div className="text-xs text-red-400 font-medium">Absent</div>
-                        <div className="text-lg font-bold text-red-100">{dept.totalAbsentDays}</div>
+                      <div className="flex flex-col items-center justify-center w-20 py-2 rounded-xl bg-red-500/10 border border-red-500/20 shadow-inner">
+                        <div className="text-[10px] uppercase tracking-wider text-red-400 font-semibold mb-1">Absent</div>
+                        <div className="text-xl font-black text-red-100">{dept.totalAbsentDays}</div>
                       </div>
-                      <div className="text-center px-4 py-1 rounded bg-amber-500/10 border border-amber-500/20">
-                        <div className="text-xs text-amber-400 font-medium">Late</div>
-                        <div className="text-lg font-bold text-amber-100">{dept.totalLateDays}</div>
+                      <div className="flex flex-col items-center justify-center w-20 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 shadow-inner">
+                        <div className="text-[10px] uppercase tracking-wider text-amber-400 font-semibold mb-1">Late</div>
+                        <div className="text-xl font-black text-amber-100">{dept.totalLateDays}</div>
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-5">
                     <div className="text-right">
-                      <div className="text-xs text-slate-400">Rate</div>
-                      <div className={`text-xl font-bold ${
+                      <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-0.5">Attendance Rate</div>
+                      <div className={`text-2xl font-black drop-shadow-md ${
                         dept.deptAttendancePct >= 95 ? 'text-emerald-400' : 
                         dept.deptAttendancePct >= 85 ? 'text-amber-400' : 'text-red-400'
                       }`}>
                         {dept.deptAttendancePct}%
                       </div>
                     </div>
-                    {isExpanded ? <ChevronUp className="text-slate-500" /> : <ChevronDown className="text-slate-500" />}
+                    <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400">
+                      {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                    </div>
                   </div>
                 </div>
                 
@@ -169,6 +177,21 @@ export default function ReportsPage() {
           })}
         </div>
       )}
+      
+      <ExportReportModal 
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        startDate={startDate}
+        endDate={endDate}
+        reportData={reports.map(dept => ({
+          department: dept.departmentName,
+          total: dept.totalEmployees,
+          present: dept.totalPresentDays,
+          absent: dept.totalAbsentDays,
+          late: dept.totalLateDays,
+          rate: `${dept.deptAttendancePct}%`
+        }))}
+      />
     </div>
   );
 }

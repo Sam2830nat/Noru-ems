@@ -61,9 +61,18 @@ export class ShiftsService {
   }
 
   async remove(id: string) {
-    await this.findOne(id);
+    const { data: shift } = await this.findOne(id);
+    const count = shift._count?.employees || 0;
     await this.prisma.shift.delete({ where: { id } });
-    return { data: { deleted: true, message: 'Shift deleted successfully.' }, meta: null };
+    return { 
+      data: { 
+        deleted: true, 
+        message: count > 0 
+          ? `Shift deleted successfully. ${count} shift assignment(s) were automatically removed.`
+          : 'Shift deleted successfully.'
+      }, 
+      meta: null 
+    };
   }
 
   /** If endTime < startTime (e.g. 22:00 → 06:00) the shift crosses midnight */
