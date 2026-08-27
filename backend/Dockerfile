@@ -5,8 +5,9 @@ WORKDIR /app
 # Install openssl required by Prisma on Alpine Linux
 RUN apk add --no-cache openssl
 
+# Copy pre-installed node_modules from host (avoids npm registry inside Docker)
 COPY package*.json ./
-RUN npm install
+COPY node_modules ./node_modules
 
 COPY . .
 RUN npx prisma generate
