@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Loader2, UserPlus } from 'lucide-react';
+import toast from 'react-hot-toast';
 import api from '@/lib/api';
 import { Department, Employee } from '@/lib/types';
 
@@ -43,6 +44,7 @@ export default function AssignEmployeeToDeptModal({ isOpen, onClose, onSuccess, 
     try {
       // Assign by updating the employee's departmentId
       await api.patch(`/employees/${selectedEmployeeId}`, { departmentId: department.id });
+      toast.success('Employee assigned to department!');
       onSuccess();
       onClose();
     } catch (error: any) {

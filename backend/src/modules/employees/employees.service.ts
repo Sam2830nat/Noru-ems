@@ -39,7 +39,7 @@ export class EmployeesService {
       this.prisma.employee.findMany({
         where,
         include: EMPLOYEE_INCLUDE,
-        orderBy: [{ status: 'asc' }, { firstName: 'asc' }],
+        orderBy: { updatedAt: 'desc' },
         skip,
         take: limit,
       }),

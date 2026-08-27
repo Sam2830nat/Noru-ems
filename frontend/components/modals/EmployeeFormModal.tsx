@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import api from '@/lib/api';
 import { Employee, Department, Role } from '@/lib/types';
 import { format } from 'date-fns';
@@ -80,8 +81,10 @@ export default function EmployeeFormModal({ isOpen, onClose, onSuccess, employee
     try {
       if (isEdit) {
         await api.patch(`/employees/${employee.id}`, payload);
+        toast.success('Employee updated successfully!');
       } else {
         await api.post('/employees', payload);
+        toast.success('Employee created successfully!');
       }
       onSuccess();
       onClose();

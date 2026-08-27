@@ -6,6 +6,7 @@ import api from '@/lib/api';
 import { Employee, PaginationMeta } from '@/lib/types';
 import { Search, Plus, Eye, Edit2, Trash2, CalendarPlus } from 'lucide-react';
 import { format } from 'date-fns';
+import toast from 'react-hot-toast';
 import EmployeeFormModal from '@/components/modals/EmployeeFormModal';
 import DeleteConfirmationModal from '@/components/modals/DeleteConfirmationModal';
 import AssignShiftModal from '@/components/modals/AssignShiftModal';
@@ -27,7 +28,7 @@ export default function EmployeesPage() {
     setLoading(true);
     try {
       const res = await api.get('/employees', {
-        params: { page: p, limit: 15, search: s || undefined }
+        params: { page: p, limit: 8, search: s || undefined }
       });
       setEmployees(res.data.data);
       setMeta(res.data.meta);
@@ -70,8 +71,13 @@ export default function EmployeesPage() {
 
   const handleDeleteConfirm = async () => {
     if (!selectedEmployee) return;
-    await api.delete(`/employees/${selectedEmployee.id}`);
-    fetchEmployees(page, search);
+    try {
+      await api.delete(`/employees/${selectedEmployee.id}`);
+      toast.success('Employee deleted successfully');
+      fetchEmployees(page, search);
+    } catch (err) {
+      toast.error('Failed to delete employee');
+    }
   };
 
   return (

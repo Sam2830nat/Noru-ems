@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Loader2, Calendar } from 'lucide-react';
+import toast from 'react-hot-toast';
 import api from '@/lib/api';
 import { Employee, Shift } from '@/lib/types';
 import { format } from 'date-fns';
@@ -46,6 +47,7 @@ export default function AssignShiftModal({ isOpen, onClose, onSuccess, employee 
     
     try {
       await api.post(`/employees/${employee.id}/shifts`, formData);
+      toast.success('Shift assigned successfully!');
       onSuccess();
       onClose();
     } catch (error: any) {
