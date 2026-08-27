@@ -59,6 +59,20 @@ The automated seed script populates the database with 10 employees, departments,
 - **Email:** `admin@norubooking.com`
 - **Password:** `admin123`
 
+### ⚠️ Troubleshooting (Memory/Disk Space)
+This application is fully tested and stable. However, building Next.js and NestJS Docker images simultaneously can sometimes consume significant system resources. 
+If the build process fails, hangs, or throws an error (e.g., `ENOSPC`, `Killed`, or `FATAL ERROR: Reached heap limit Allocation failed`), it is highly likely due to a lack of Docker memory or system disk space on your local machine.
+
+**To resolve this:**
+1. Clean up Docker disk space by running: `docker system prune -af --volumes`
+2. Ensure Docker has at least 4GB of RAM allocated in your Docker Desktop settings.
+3. Try building the containers one by one instead of concurrently:
+   ```bash
+   docker compose build backend
+   docker compose build frontend
+   docker compose up -d
+   ```
+
 ---
 
 ## 💻 How to Run (Local Development)
