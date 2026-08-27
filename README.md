@@ -182,6 +182,17 @@ The `GET /api/v1/reports/attendance` endpoint generates a daily Department Atten
 * **Smart Deletion & Status Lifecycle**: Hard deletes where appropriate (protected by verification modals) and soft status toggles (Active/Inactive) for core entities to preserve historical data.
 * **Native Exporting**: The reporting module generates high-quality `PDF` and `CSV` files entirely on the client-side, reducing server load.
 
+## 🌟 Bonus: Multi-Tenancy Architecture (Isolated Branch)
+
+I have also architected a full **Multi-Tenant SaaS** version of this application as a bonus, allowing multiple distinct properties (Hotels/Hospitals) to be managed securely from a single database with strict data isolation.
+
+This advanced implementation is available on a separate Git branch: **`feature/multitenancy`**. 
+
+**How to test the Multi-Tenant version:**
+1. Check out the branch: `git checkout feature/multitenancy`
+2. Run `docker compose up -d` 
+*(Note: To prevent any interference with this `main` branch, the multitenancy branch uses completely isolated ports (4000/4001) and a separate Docker Postgres volume, so you can safely run both versions at the exact same time).*
+
 ---
 
 ## 🛡 Production-Minded Decisions (ADRs)
