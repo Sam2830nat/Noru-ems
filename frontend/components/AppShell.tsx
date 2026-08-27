@@ -1,12 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Sidebar from './Sidebar';
 import { useAuth } from '@/lib/auth-context';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Menu } from 'lucide-react';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const { user, loading } = useAuth();
@@ -15,8 +16,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-900">
-        <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <Loader2 className="w-10 h-10 text-indigo-600 animate-spin" />
       </div>
     );
   }
@@ -30,33 +31,39 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       router.push('/login');
     }
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-900">
-        <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <Loader2 className="w-10 h-10 text-indigo-600 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 flex">
-      <Sidebar />
-      <main className="flex-1 ml-[var(--sidebar-width)] flex flex-col min-h-screen overflow-hidden">
-        <header className="h-16 flex items-center justify-between px-8 border-b border-slate-800 bg-slate-900/50 backdrop-blur-md z-10 sticky top-0">
+    <div className="min-h-screen bg-slate-50 flex">
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <main className="flex-1 lg:ml-[var(--sidebar-width)] flex flex-col min-h-screen overflow-hidden">
+        <header className="h-16 flex items-center justify-between px-4 lg:px-8 border-b border-slate-200 bg-white/80 backdrop-blur-md z-10 sticky top-0">
           <div className="flex items-center gap-4">
-            <h1 className="text-xl font-semibold text-slate-100 capitalize">
+            <button 
+              onClick={() => setIsSidebarOpen(true)}
+              className="lg:hidden p-2 -ml-2 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100"
+            >
+              <Menu size={24} />
+            </button>
+            <h1 className="text-xl font-semibold text-slate-900 capitalize hidden sm:block">
               {pathname === '/' ? 'Dashboard' : pathname.split('/')[1]}
             </h1>
           </div>
           <div className="flex items-center gap-4">
-            <div className="text-right">
-              <div className="text-sm font-medium text-slate-200">{user.name}</div>
-              <div className="text-xs text-slate-400 capitalize">{user.role.toLowerCase()}</div>
+            <div className="text-right hidden sm:block">
+              <div className="text-sm font-medium text-slate-700">{user.name}</div>
+              <div className="text-xs text-slate-500 capitalize">{user.role.toLowerCase()}</div>
             </div>
-            <div className="w-10 h-10 rounded-full bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold">
+            <div className="w-10 h-10 rounded-full bg-indigo-100 border border-indigo-200 flex items-center justify-center text-indigo-700 font-bold">
               {user.name.charAt(0)}
             </div>
           </div>
         </header>
-        <div className="flex-1 p-8 overflow-y-auto">
+        <div className="flex-1 p-4 lg:p-8 overflow-y-auto">
           <div className="max-w-7xl mx-auto">
             {children}
           </div>
