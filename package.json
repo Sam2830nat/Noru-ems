@@ -4,10 +4,11 @@
   "description": "Noru Hotel Employee Management System",
   "private": true,
   "scripts": {
-    "noru:start": "docker compose up --build || docker-compose up --build",
+    "setup": "cd backend && npm install && cd ../frontend && npm install",
+    "noru:start": "npm run setup && (docker compose up --build || docker-compose up --build)",
     "noru:stop": "docker compose down || docker-compose down",
     "noru:clean": "docker compose down -v --rmi all || docker-compose down -v --rmi all",
-    "noru:restart": "docker compose down --remove-orphans && docker compose up --build || docker-compose down --remove-orphans && docker-compose up --build",
+    "noru:restart": "docker compose down --remove-orphans && (docker compose up --build || docker-compose up --build)",
     "backend:dev": "cd backend && npm run start:dev",
     "frontend:dev": "cd frontend && npm run dev"
   }

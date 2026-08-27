@@ -35,10 +35,16 @@ Microservices introduce distributed systems complexity (network latency, distrib
 The entire application is completely containerized. The easiest way to run the project is using Docker Compose, which will spin up the database, automatically run migrations, seed the database, and start both the backend and frontend.
 
 ```bash
-# Clone the repository and enter the directory
+# Clone the repository
+git clone <repo-url>
 cd Noru-ems
 
-# Build and start all services (Database, Backend, Frontend)
+# Step 1: Install local dependencies (backend + frontend)
+# This only needs to be run ONCE after cloning.
+# npm run noru:start calls this automatically, but you can run it separately.
+npm run setup
+
+# Step 2: Build Docker images and start all services
 npm run noru:start
 ```
 
@@ -99,9 +105,11 @@ npm run dev
 ### Root (`/package.json`)
 | Command | Description |
 |---|---|
-| `npm run noru:start` | Builds and starts all services (DB, Backend, Frontend) via Docker |
+| `npm run setup` | **Run once after cloning.** Installs `node_modules` for both backend and frontend locally |
+| `npm run noru:start` | Runs `setup` then builds Docker images and starts all services |
 | `npm run noru:stop` | Stops all running Docker containers |
-| `npm run noru:clean` | Stops all containers and aggressively removes volumes/images |
+| `npm run noru:clean` | Stops all containers and removes volumes/images (full reset) |
+| `npm run noru:restart` | Removes orphaned containers and does a fresh start |
 | `npm run backend:dev` | Starts the NestJS server locally in watch mode |
 | `npm run frontend:dev` | Starts the Next.js server locally in watch mode |
 
