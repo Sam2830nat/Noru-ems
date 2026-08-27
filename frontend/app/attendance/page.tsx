@@ -4,9 +4,10 @@ import React, { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
-import { Attendance, PaginationMeta } from '@/lib/types';
+import { Attendance, PaginationMeta, Employee } from '@/lib/types';
 import { Search, Plus, Calendar, Edit } from 'lucide-react';
 import { format } from 'date-fns';
+import RecordAttendanceModal from '@/components/modals/RecordAttendanceModal';
 
 function AttendanceContent() {
   const searchParams = useSearchParams();
@@ -20,6 +21,14 @@ function AttendanceContent() {
   const [page, setPage] = useState(pageParam ? parseInt(pageParam) : 1);
   const employeeId = searchParams.get('employeeId') || '';
   const date = searchParams.get('date') || '';
+
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState<Attendance | undefined>(undefined);
+
+  useEffect(() => {
+    api.get('/employees', { params: { limit: 100 } }).then(res => setEmployees(res.data.data));
+  }, []);
 
   const fetchAttendance = async (p = page) => {
     setLoading(true);
@@ -87,7 +96,10 @@ function AttendanceContent() {
             </div>
           )}
         </div>
-        <button className="btn-primary flex items-center justify-center gap-2">
+        <button 
+          onClick={() => { setSelectedRecord(undefined); setIsModalOpen(true); }}
+          className="btn-primary flex items-center justify-center gap-2"
+        >
           <Plus size={18} />
           Record Attendance
         </button>
@@ -97,33 +109,33 @@ function AttendanceContent() {
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-slate-900/50 border-b border-slate-700">
-                <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Date</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Employee</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Check In/Out</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Notes</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider text-right">Actions</th>
+              <tr className="border-b" style={{ borderColor: 'var(--border-color)', backgroundColor: 'var(--hover-bg)' }}>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Date</th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Employee</th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Status</th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Check In/Out</th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Notes</th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-right" style={{ color: 'var(--text-muted)' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {loading && records.length === 0 ? (
-                <tr><td colSpan={6} className="px-6 py-12 text-center text-slate-500">Loading...</td></tr>
+                <tr><td colSpan={6} className="px-6 py-12 text-center" style={{ color: 'var(--text-muted)' }}>Loading...</td></tr>
               ) : records.length === 0 ? (
                 <tr><td colSpan={6} className="px-6 py-12 text-center text-slate-500">No attendance records found.</td></tr>
               ) : (
                 records.map(record => (
                   <tr key={record.id} className="table-row">
-                    <td className="px-6 py-4 text-sm font-medium text-white whitespace-nowrap">
+                    <td className="px-6 py-4 text-sm font-medium whitespace-nowrap" style={{ color: 'var(--text-main)' }}>
                       {format(new Date(record.workDate), 'MMM d, yyyy')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-white">
-                        <Link href={`/employees/${record.employeeId}`} className="hover:text-indigo-400 hover:underline">
+                      <div className="text-sm font-medium" style={{ color: 'var(--text-main)' }}>
+                        <Link href={`/employees/${record.employeeId}`} className="hover:text-indigo-500 hover:underline transition-colors">
                           {record.employee?.firstName} {record.employee?.lastName}
                         </Link>
                       </div>
-                      <div className="text-xs text-slate-400">{record.employee?.employeeNumber}</div>
+                      <div className="text-xs" style={{ color: 'var(--text-muted)' }}>{record.employee?.employeeNumber}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`badge ${
@@ -136,18 +148,21 @@ function AttendanceContent() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-slate-300">
-                        In: <span className="text-slate-400">{record.checkIn ? format(new Date(record.checkIn), 'h:mm a') : '—'}</span>
+                      <div className="text-sm" style={{ color: 'var(--text-main)' }}>
+                        In: <span style={{ color: 'var(--text-muted)' }}>{record.checkIn ? format(new Date(record.checkIn), 'h:mm a') : '—'}</span>
                       </div>
-                      <div className="text-sm text-slate-300">
-                        Out: <span className="text-slate-400">{record.checkOut ? format(new Date(record.checkOut), 'h:mm a') : '—'}</span>
+                      <div className="text-sm" style={{ color: 'var(--text-main)' }}>
+                        Out: <span style={{ color: 'var(--text-muted)' }}>{record.checkOut ? format(new Date(record.checkOut), 'h:mm a') : '—'}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-400 max-w-xs truncate">
+                    <td className="px-6 py-4 text-sm max-w-xs truncate" style={{ color: 'var(--text-muted)' }}>
                       {record.notes || '—'}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button className="p-2 text-slate-400 hover:text-indigo-400 hover:bg-indigo-400/10 rounded-lg transition-colors">
+                      <button 
+                        onClick={() => { setSelectedRecord(record); setIsModalOpen(true); }}
+                        className="p-2 text-slate-400 hover:text-indigo-500 hover:bg-slate-100 dark:hover:bg-indigo-400/10 rounded-lg transition-colors"
+                      >
                         <Edit size={16} />
                       </button>
                     </td>
@@ -182,6 +197,14 @@ function AttendanceContent() {
           </div>
         )}
       </div>
+
+      <RecordAttendanceModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={() => fetchAttendance()}
+        attendance={selectedRecord}
+        employees={employees}
+      />
     </div>
   );
 }

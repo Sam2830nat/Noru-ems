@@ -5,9 +5,11 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import api from '@/lib/api';
 import { Employee, EmployeeShift, Attendance } from '@/lib/types';
-import { ArrowLeft, Edit, Trash2, Mail, Phone, Calendar as CalendarIcon, Briefcase, Building2 } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Mail, Phone, Calendar as CalendarIcon, Briefcase, Building2, PowerOff, Power } from 'lucide-react';
 import { format } from 'date-fns';
+import toast from 'react-hot-toast';
 import AssignShiftModal from '@/components/modals/AssignShiftModal';
+import ActionConfirmationModal from '@/components/modals/ActionConfirmationModal';
 
 type EmployeeDetail = Employee & {
   shifts: EmployeeShift[];
@@ -20,6 +22,7 @@ export default function EmployeeDetailPage() {
   const [employee, setEmployee] = useState<EmployeeDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAssignShiftOpen, setIsAssignShiftOpen] = useState(false);
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
 
   const fetchEmployee = () => {
     if (!params.id) return;
@@ -33,16 +36,15 @@ export default function EmployeeDetailPage() {
     fetchEmployee();
   }, [params.id]);
 
-  const handleDeactivate = async () => {
-    if (!confirm('Are you sure you want to deactivate this employee? They will no longer be able to be scheduled, but their history will remain.')) return;
+  const handleStatusConfirm = async () => {
+    if (!employee) return;
+    const newStatus = employee.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
     try {
-      await api.delete(`/employees/${params.id}`);
-      // Refresh
-      const res = await api.get(`/employees/${params.id}`);
-      setEmployee(res.data.data);
-    } catch (err) {
-      console.error(err);
-      alert('Failed to deactivate employee.');
+      await api.patch(`/employees/${employee.id}`, { status: newStatus });
+      toast.success(`Employee ${newStatus === 'ACTIVE' ? 'activated' : 'inactivated'} successfully`);
+      fetchEmployee();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to update status');
     }
   };
 
@@ -73,11 +75,12 @@ export default function EmployeeDetailPage() {
           <button className="btn-secondary flex items-center gap-2">
             <Edit size={16} /> Edit
           </button>
-          {employee.status === 'ACTIVE' && (
-            <button onClick={handleDeactivate} className="btn-danger flex items-center gap-2">
-              <Trash2 size={16} /> Deactivate
-            </button>
-          )}
+          <button 
+            onClick={() => setIsStatusModalOpen(true)} 
+            className={`btn-secondary flex items-center gap-2 ${employee.status === 'ACTIVE' ? 'hover:text-amber-500 hover:border-amber-500/50' : 'hover:text-emerald-500 hover:border-emerald-500/50'}`}
+          >
+            {employee.status === 'ACTIVE' ? <><PowerOff size={16} /> Inactivate</> : <><Power size={16} /> Activate</>}
+          </button>
         </div>
       </div>
 
@@ -196,6 +199,17 @@ export default function EmployeeDetailPage() {
         onClose={() => setIsAssignShiftOpen(false)}
         onSuccess={fetchEmployee}
         employee={employee}
+      />
+
+      <ActionConfirmationModal
+        isOpen={isStatusModalOpen}
+        onClose={() => setIsStatusModalOpen(false)}
+        onConfirm={handleStatusConfirm}
+        title={employee?.status === 'ACTIVE' ? "Inactivate Employee" : "Activate Employee"}
+        message={`Are you sure you want to ${employee?.status === 'ACTIVE' ? 'inactivate' : 'activate'} ${employee?.firstName} ${employee?.lastName}?`}
+        verifyString={employee?.status === 'ACTIVE' ? "INACTIVATE" : "ACTIVATE"}
+        actionButtonText={employee?.status === 'ACTIVE' ? "Inactivate" : "Activate"}
+        isDestructive={employee?.status === 'ACTIVE'}
       />
     </div>
   );
