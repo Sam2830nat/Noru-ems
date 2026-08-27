@@ -148,7 +148,11 @@ export default function EmployeesPage() {
                 </tr>
               ) : (
                 employees.map((emp) => (
-                  <tr key={emp.id} className="table-row">
+                  <tr 
+                    key={emp.id} 
+                    className="table-row cursor-pointer"
+                    onClick={() => handleViewClick(emp)}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="h-10 w-10 flex-shrink-0 rounded-full flex items-center justify-center font-bold"
@@ -182,37 +186,38 @@ export default function EmployeesPage() {
                       {format(new Date(emp.hireDate), 'MMM d, yyyy')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end gap-1">
+                      <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
                         <button 
-                          onClick={() => handleAssignShiftClick(emp)}
+                          onClick={(e) => { e.stopPropagation(); handleAssignShiftClick(emp); }}
                           title="Assign Shift"
                           className="p-2 rounded-lg transition-colors hover:bg-slate-100 dark:hover:bg-slate-700/50 text-slate-500 hover:text-purple-600 dark:hover:text-purple-400"
                         >
                           <CalendarPlus size={18} />
                         </button>
                         <button 
-                          onClick={() => handleStatusClick(emp)}
+                          onClick={(e) => { e.stopPropagation(); handleStatusClick(emp); }}
                           title={emp.status === 'ACTIVE' ? "Inactivate Employee" : "Activate Employee"}
                           className={`p-2 rounded-lg transition-colors hover:bg-slate-100 dark:hover:bg-slate-700/50 text-slate-500 ${emp.status === 'ACTIVE' ? 'hover:text-amber-600 dark:hover:text-amber-400' : 'hover:text-emerald-600 dark:hover:text-emerald-400'}`}
                         >
                           {emp.status === 'ACTIVE' ? <PowerOff size={18} /> : <Power size={18} />}
                         </button>
-                        <button 
-                          onClick={() => handleViewClick(emp)} 
+                        <Link 
+                          href={`/employees/${emp.id}`} 
                           title="View Details"
                           className="p-2 rounded-lg transition-colors hover:bg-slate-100 dark:hover:bg-slate-700/50 text-slate-500 hover:text-blue-600 dark:hover:text-blue-400"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           <Eye size={18} />
-                        </button>
+                        </Link>
                         <button 
-                          onClick={() => handleEdit(emp)}
+                          onClick={(e) => { e.stopPropagation(); handleEdit(emp); }}
                           title="Edit Employee"
                           className="p-2 rounded-lg transition-colors hover:bg-slate-100 dark:hover:bg-slate-700/50 text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400"
                         >
                           <Edit2 size={18} />
                         </button>
                         <button 
-                          onClick={() => handleDeleteClick(emp)}
+                          onClick={(e) => { e.stopPropagation(); handleDeleteClick(emp); }}
                           title="Delete Employee"
                           className="p-2 rounded-lg transition-colors hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-500 hover:text-red-600 dark:hover:text-red-400"
                         >
