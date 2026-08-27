@@ -4,8 +4,10 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import api from '@/lib/api';
 import { Employee, PaginationMeta } from '@/lib/types';
-import { Search, Plus, MoreHorizontal } from 'lucide-react';
+import { Search, Plus, Eye, Edit2, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
+import EmployeeFormModal from '@/components/modals/EmployeeFormModal';
+import DeleteConfirmationModal from '@/components/modals/DeleteConfirmationModal';
 
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -13,6 +15,11 @@ export default function EmployeesPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+
+  // Modal States
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | undefined>(undefined);
 
   const fetchEmployees = async (p = 1, s = search) => {
     setLoading(true);
@@ -31,12 +38,33 @@ export default function EmployeesPage() {
 
   useEffect(() => {
     fetchEmployees(page, search);
-  }, [page]); // Re-fetch on page change
+  }, [page]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setPage(1); // Reset to page 1 on search
+    setPage(1);
     fetchEmployees(1, search);
+  };
+
+  const handleCreate = () => {
+    setSelectedEmployee(undefined);
+    setIsFormModalOpen(true);
+  };
+
+  const handleEdit = (emp: Employee) => {
+    setSelectedEmployee(emp);
+    setIsFormModalOpen(true);
+  };
+
+  const handleDeleteClick = (emp: Employee) => {
+    setSelectedEmployee(emp);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedEmployee) return;
+    await api.delete(`/employees/${selectedEmployee.id}`);
+    fetchEmployees(page, search);
   };
 
   return (
@@ -52,7 +80,7 @@ export default function EmployeesPage() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </form>
-        <button className="btn-primary flex items-center justify-center gap-2">
+        <button onClick={handleCreate} className="btn-primary flex items-center justify-center gap-2">
           <Plus size={18} />
           Add Employee
         </button>
@@ -62,61 +90,82 @@ export default function EmployeesPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-700 bg-slate-900/50">
-                <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Employee</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Department & Role</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Hire Date</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider text-right">Actions</th>
+              <tr className="border-b" style={{ borderColor: 'var(--border-color)', backgroundColor: 'var(--hover-bg)' }}>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Employee</th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Department & Role</th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Status</th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Hire Date</th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-right" style={{ color: 'var(--text-muted)' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {loading && employees.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-slate-400">Loading employees...</td>
+                  <td colSpan={5} className="px-6 py-12 text-center" style={{ color: 'var(--text-muted)' }}>Loading employees...</td>
                 </tr>
               ) : employees.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-slate-400">No employees found.</td>
+                  <td colSpan={5} className="px-6 py-12 text-center" style={{ color: 'var(--text-muted)' }}>No employees found.</td>
                 </tr>
               ) : (
                 employees.map((emp) => (
                   <tr key={emp.id} className="table-row">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="h-10 w-10 flex-shrink-0 rounded-full bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold">
+                        <div className="h-10 w-10 flex-shrink-0 rounded-full flex items-center justify-center font-bold"
+                             style={{ backgroundColor: 'var(--hover-bg)', color: 'var(--btn-primary-bg)' }}>
                           {emp.firstName.charAt(0)}{emp.lastName.charAt(0)}
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-white">
-                            <Link href={`/employees/${emp.id}`} className="hover:text-indigo-400 hover:underline">
+                          <div className="text-sm font-medium">
+                            <Link href={`/employees/${emp.id}`} className="hover:underline hover:text-indigo-600 transition-colors" style={{ color: 'var(--text-main)' }}>
                               {emp.firstName} {emp.lastName}
                             </Link>
                           </div>
-                          <div className="text-xs text-slate-400">{emp.employeeNumber} &bull; {emp.email}</div>
+                          <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{emp.employeeNumber} &bull; {emp.email}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-slate-200">{emp.department?.name || '—'}</div>
-                      <div className="text-xs text-slate-500">{emp.role?.name || '—'}</div>
+                      <div className="text-sm font-medium" style={{ color: 'var(--text-main)' }}>{emp.department?.name || '—'}</div>
+                      <div className="text-xs" style={{ color: 'var(--text-muted)' }}>{emp.role?.name || '—'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`badge ${
                         emp.status === 'ACTIVE' 
-                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
-                          : 'bg-slate-500/10 text-slate-400 border border-slate-500/20'
+                          ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20' 
+                          : 'bg-slate-100 text-slate-700 dark:bg-slate-500/10 dark:text-slate-400 border border-slate-200 dark:border-slate-500/20'
                       }`}>
                         {emp.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm" style={{ color: 'var(--text-muted)' }}>
                       {format(new Date(emp.hireDate), 'MMM d, yyyy')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Link href={`/employees/${emp.id}`} className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg inline-flex transition-colors">
-                        <MoreHorizontal size={18} />
-                      </Link>
+                      <div className="flex items-center justify-end gap-1">
+                        <Link 
+                          href={`/employees/${emp.id}`} 
+                          title="View Details"
+                          className="p-2 rounded-lg transition-colors hover:bg-slate-100 dark:hover:bg-slate-700/50 text-slate-500 hover:text-blue-600 dark:hover:text-blue-400"
+                        >
+                          <Eye size={18} />
+                        </Link>
+                        <button 
+                          onClick={() => handleEdit(emp)}
+                          title="Edit Employee"
+                          className="p-2 rounded-lg transition-colors hover:bg-slate-100 dark:hover:bg-slate-700/50 text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400"
+                        >
+                          <Edit2 size={18} />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteClick(emp)}
+                          title="Delete Employee"
+                          className="p-2 rounded-lg transition-colors hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-500 hover:text-red-600 dark:hover:text-red-400"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -126,9 +175,9 @@ export default function EmployeesPage() {
         </div>
         
         {meta && meta.totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-slate-700/50 flex items-center justify-between">
-            <div className="text-sm text-slate-400">
-              Showing <span className="font-medium text-white">{((meta.page - 1) * meta.limit) + 1}</span> to <span className="font-medium text-white">{Math.min(meta.page * meta.limit, meta.total)}</span> of <span className="font-medium text-white">{meta.total}</span> results
+          <div className="px-6 py-4 border-t flex items-center justify-between" style={{ borderColor: 'var(--border-color)' }}>
+            <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
+              Showing <span className="font-medium" style={{ color: 'var(--text-main)' }}>{((meta.page - 1) * meta.limit) + 1}</span> to <span className="font-medium" style={{ color: 'var(--text-main)' }}>{Math.min(meta.page * meta.limit, meta.total)}</span> of <span className="font-medium" style={{ color: 'var(--text-main)' }}>{meta.total}</span> results
             </div>
             <div className="flex gap-2">
               <button
@@ -149,6 +198,22 @@ export default function EmployeesPage() {
           </div>
         )}
       </div>
+
+      <EmployeeFormModal 
+        isOpen={isFormModalOpen}
+        onClose={() => setIsFormModalOpen(false)}
+        onSuccess={() => fetchEmployees(page, search)}
+        employee={selectedEmployee}
+      />
+
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Employee"
+        message={`Are you sure you want to completely delete ${selectedEmployee?.firstName} ${selectedEmployee?.lastName}? This action is irreversible and will erase all their attendance and shift history.`}
+        verifyString="DELETE"
+      />
     </div>
   );
 }
