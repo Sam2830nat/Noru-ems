@@ -1,13 +1,14 @@
 'use client';
 
 import React from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Sidebar from './Sidebar';
 import { useAuth } from '@/lib/auth-context';
 import { Loader2 } from 'lucide-react';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { user, loading } = useAuth();
   
   const isLoginPage = pathname === '/login';
@@ -25,8 +26,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   if (!user) {
-    // AuthContext handles redirect to login, but just in case
-    return null;
+    if (typeof window !== 'undefined') {
+      router.push('/login');
+    }
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-900">
+        <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
+      </div>
+    );
   }
 
   return (
