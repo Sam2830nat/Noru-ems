@@ -21,9 +21,10 @@ Microservices introduce distributed systems complexity (network latency, distrib
 **Frontend (`/frontend`)**
 * **Framework:** Next.js 14 (App Router)
 * **Language:** TypeScript
-* **Styling:** Tailwind CSS v4 (Custom Glassmorphism & Dark Theme)
-* **Data Fetching:** Axios (with custom JWT interceptors)
-* **Icons & Charts:** Lucide React, Recharts
+* **Styling:** Tailwind CSS v4 (Custom Glassmorphism, CSS Variables for Dark/Light Themes)
+* **State & Data:** React Hooks, Axios (with custom JWT interceptors)
+* **UI/UX:** `lucide-react` (icons), `react-hot-toast` (notifications), debounced live-search, and a unified Modal/Drawer architecture
+* **Reporting Engine:** Client-side PDF (`jspdf`, `jspdf-autotable`) and CSV exports
 
 **Infrastructure**
 * **Containerization:** Docker & Docker Compose (Multi-stage builds)
@@ -157,6 +158,15 @@ The `GET /api/v1/reports/attendance` endpoint generates a daily Department Atten
 - **`FILTER (WHERE ...)`**: Uses modern PostgreSQL conditional aggregation instead of bulky `CASE WHEN` statements.
 - **`json_agg` + `json_build_object`**: Returns the department summary *and* all nested employee drill-down records in a single query round-trip. No N+1 queries.
 - **Division-by-zero protection**: Uses `NULLIF(scheduled_days, 0)`.
+
+---
+
+## 🚀 Key Features
+
+* **Real-Time Search Engine**: Implemented debounced, keystroke-level instant search filtering across all management pages (Employees, Departments, Roles, Shifts, Attendance).
+* **Modal-Driven Architecture**: Fully standardized CRUD operations using responsive, animated Modals and slide-out Drawers to maintain user context without aggressive page reloads.
+* **Smart Deletion & Status Lifecycle**: Hard deletes where appropriate (protected by verification modals) and soft status toggles (Active/Inactive) for core entities to preserve historical data.
+* **Native Exporting**: The reporting module generates high-quality `PDF` and `CSV` files entirely on the client-side, reducing server load.
 
 ---
 
