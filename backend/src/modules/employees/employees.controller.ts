@@ -40,9 +40,9 @@ export class EmployeesController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Deactivate employee (soft delete — attendance history preserved)' })
-  deactivate(@Param('id') id: string) {
-    return this.service.deactivate(id);
+  @ApiOperation({ summary: 'Permanently delete employee' })
+  remove(@Param('id') id: string) {
+    return this.service.remove(id);
   }
 
   // ── Shift Assignment ───────────────────────────────────────────────────────

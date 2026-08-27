@@ -4,12 +4,14 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import api from '@/lib/api';
 import { Employee, PaginationMeta } from '@/lib/types';
-import { Search, Plus, Eye, Edit2, Trash2, CalendarPlus } from 'lucide-react';
+import { Search, Plus, Eye, Edit2, Trash2, CalendarPlus, Power, PowerOff } from 'lucide-react';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import EmployeeFormModal from '@/components/modals/EmployeeFormModal';
 import DeleteConfirmationModal from '@/components/modals/DeleteConfirmationModal';
+import ActionConfirmationModal from '@/components/modals/ActionConfirmationModal';
 import AssignShiftModal from '@/components/modals/AssignShiftModal';
+import EmployeeDetailDrawer from '@/components/drawers/EmployeeDetailDrawer';
 
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -21,7 +23,9 @@ export default function EmployeesPage() {
   // Modal States
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [isShiftModalOpen, setIsShiftModalOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | undefined>(undefined);
 
   const fetchEmployees = async (p = 1, s = search) => {
@@ -69,6 +73,16 @@ export default function EmployeesPage() {
     setIsShiftModalOpen(true);
   };
 
+  const handleStatusClick = (emp: Employee) => {
+    setSelectedEmployee(emp);
+    setIsStatusModalOpen(true);
+  };
+
+  const handleViewClick = (emp: Employee) => {
+    setSelectedEmployee(emp);
+    setIsDrawerOpen(true);
+  };
+
   const handleDeleteConfirm = async () => {
     if (!selectedEmployee) return;
     try {
@@ -77,6 +91,18 @@ export default function EmployeesPage() {
       fetchEmployees(page, search);
     } catch (err) {
       toast.error('Failed to delete employee');
+    }
+  };
+
+  const handleStatusConfirm = async () => {
+    if (!selectedEmployee) return;
+    const newStatus = selectedEmployee.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    try {
+      await api.patch(`/employees/${selectedEmployee.id}`, { status: newStatus });
+      toast.success(`Employee ${newStatus === 'ACTIVE' ? 'activated' : 'inactivated'} successfully`);
+      fetchEmployees(page, search);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to update status');
     }
   };
 
@@ -164,13 +190,20 @@ export default function EmployeesPage() {
                         >
                           <CalendarPlus size={18} />
                         </button>
-                        <Link 
-                          href={`/employees/${emp.id}`} 
+                        <button 
+                          onClick={() => handleStatusClick(emp)}
+                          title={emp.status === 'ACTIVE' ? "Inactivate Employee" : "Activate Employee"}
+                          className={`p-2 rounded-lg transition-colors hover:bg-slate-100 dark:hover:bg-slate-700/50 text-slate-500 ${emp.status === 'ACTIVE' ? 'hover:text-amber-600 dark:hover:text-amber-400' : 'hover:text-emerald-600 dark:hover:text-emerald-400'}`}
+                        >
+                          {emp.status === 'ACTIVE' ? <PowerOff size={18} /> : <Power size={18} />}
+                        </button>
+                        <button 
+                          onClick={() => handleViewClick(emp)} 
                           title="View Details"
                           className="p-2 rounded-lg transition-colors hover:bg-slate-100 dark:hover:bg-slate-700/50 text-slate-500 hover:text-blue-600 dark:hover:text-blue-400"
                         >
                           <Eye size={18} />
-                        </Link>
+                        </button>
                         <button 
                           onClick={() => handleEdit(emp)}
                           title="Edit Employee"
@@ -240,6 +273,23 @@ export default function EmployeesPage() {
         title="Delete Employee"
         message={`Are you sure you want to completely delete ${selectedEmployee?.firstName} ${selectedEmployee?.lastName}? This action is irreversible and will erase all their attendance and shift history.`}
         verifyString="DELETE"
+      />
+
+      <ActionConfirmationModal
+        isOpen={isStatusModalOpen}
+        onClose={() => setIsStatusModalOpen(false)}
+        onConfirm={handleStatusConfirm}
+        title={selectedEmployee?.status === 'ACTIVE' ? "Inactivate Employee" : "Activate Employee"}
+        message={`Are you sure you want to ${selectedEmployee?.status === 'ACTIVE' ? 'inactivate' : 'activate'} ${selectedEmployee?.firstName} ${selectedEmployee?.lastName}?`}
+        verifyString={selectedEmployee?.status === 'ACTIVE' ? "INACTIVATE" : "ACTIVATE"}
+        actionButtonText={selectedEmployee?.status === 'ACTIVE' ? "Inactivate" : "Activate"}
+        isDestructive={selectedEmployee?.status === 'ACTIVE'}
+      />
+
+      <EmployeeDetailDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        employeeId={selectedEmployee?.id || null}
       />
     </div>
   );

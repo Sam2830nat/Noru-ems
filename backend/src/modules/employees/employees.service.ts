@@ -128,20 +128,15 @@ export class EmployeesService {
     return { data: employee, meta: null };
   }
 
-  /** Soft deactivation — never hard-deletes to preserve attendance history */
-  async deactivate(id: string) {
+  /** Hard delete employee and cascade all relations */
+  async remove(id: string) {
     const { data: employee } = await this.findOne(id);
 
-    if (employee.status === EmployeeStatus.INACTIVE) {
-      throw new BadRequestException('Employee is already inactive');
-    }
-
-    const updated = await this.prisma.employee.update({
+    const deleted = await this.prisma.employee.delete({
       where: { id },
-      data: { status: EmployeeStatus.INACTIVE },
       include: EMPLOYEE_INCLUDE,
     });
-    return { data: updated, meta: null };
+    return { data: deleted, meta: null };
   }
 
   // ── Shift Assignment ───────────────────────────────────────────────────────
