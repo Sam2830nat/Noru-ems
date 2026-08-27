@@ -9,7 +9,13 @@ import {
   Clock, CalendarCheck, BarChart3, LogOut, X
 } from 'lucide-react';
 
-export default function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+  isCollapsed: boolean;
+}
+
+export default function Sidebar({ isOpen, onClose, isCollapsed }: SidebarProps) {
   const pathname = usePathname();
   const { logout, loading } = useAuth();
 
@@ -30,32 +36,41 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose:
       {/* Mobile Overlay */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-30 lg:hidden"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden"
           onClick={onClose}
         />
       )}
       
-      <aside className={`
-        fixed inset-y-0 left-0 w-[var(--sidebar-width)] glass-card border-l-0 border-y-0 rounded-none flex flex-col z-40
-        transition-transform duration-300 ease-in-out lg:translate-x-0 bg-white
-        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-      `}>
-        <div className="h-16 flex items-center justify-between px-6 border-b border-slate-200">
-          <div className="flex items-center gap-2 text-slate-900 font-bold text-xl tracking-tight">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-600/20">
+      <aside 
+        className={`
+          fixed inset-y-0 left-0 border-r flex flex-col z-40 transition-all duration-300 ease-in-out lg:translate-x-0
+          ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+        `}
+        style={{ 
+          width: isCollapsed ? 'var(--sidebar-collapsed-width)' : 'var(--sidebar-width)',
+          backgroundColor: 'var(--bg-card)',
+          borderColor: 'var(--border-color)'
+        }}
+      >
+        <div className="h-16 flex items-center justify-between px-6 border-b" style={{ borderColor: 'var(--border-color)' }}>
+          <div className="flex items-center gap-2 font-bold text-xl tracking-tight" style={{ color: 'var(--text-main)' }}>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-lg shadow-indigo-600/20"
+                 style={{ backgroundColor: 'var(--btn-primary-bg)' }}>
               <span className="text-white text-lg">N</span>
             </div>
-            Noru EMS
+            {!isCollapsed && <span className="whitespace-nowrap">Noru EMS</span>}
           </div>
-          <button onClick={onClose} className="lg:hidden text-slate-500 hover:text-slate-900">
+          <button onClick={onClose} className="lg:hidden" style={{ color: 'var(--text-muted)' }}>
             <X size={20} />
           </button>
         </div>
         
-        <div className="flex-1 overflow-y-auto py-6 px-4 flex flex-col gap-1.5">
-          <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 px-3">
-            Menu
-          </div>
+        <div className="flex-1 overflow-y-auto py-6 px-4 flex flex-col gap-1.5 overflow-x-hidden">
+          {!isCollapsed && (
+            <div className="text-xs font-semibold uppercase tracking-wider mb-2 px-3" style={{ color: 'var(--text-muted)' }}>
+              Menu
+            </div>
+          )}
           {links.map((link) => {
             const Icon = link.icon;
             const isActive = pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href));
@@ -64,22 +79,25 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose:
                 key={link.href}
                 href={link.href}
                 onClick={onClose}
-                className={`sidebar-link ${isActive ? 'active' : ''}`}
+                className={`sidebar-link ${isActive ? 'active' : ''} ${isCollapsed ? 'justify-center px-0' : ''}`}
+                title={isCollapsed ? link.name : undefined}
               >
-                <Icon size={18} className={isActive ? 'text-indigo-600' : 'text-slate-500'} />
-                {link.name}
+                <Icon size={18} className="shrink-0" style={{ color: isActive ? 'var(--btn-primary-bg)' : 'inherit' }} />
+                {!isCollapsed && <span className="whitespace-nowrap">{link.name}</span>}
               </Link>
             );
           })}
         </div>
 
-        <div className="p-4 border-t border-slate-200">
+        <div className="p-4 border-t" style={{ borderColor: 'var(--border-color)' }}>
           <button
             onClick={logout}
-            className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-sm font-medium text-slate-600 hover:text-red-600 hover:bg-red-50 transition-all"
+            className={`flex items-center gap-3 py-2.5 w-full rounded-lg text-sm font-medium transition-all ${isCollapsed ? 'justify-center px-0' : 'px-3'}`}
+            style={{ color: 'var(--text-muted)' }}
+            title={isCollapsed ? "Logout" : undefined}
           >
-            <LogOut size={18} />
-            Logout
+            <LogOut size={18} className="shrink-0" />
+            {!isCollapsed && <span className="whitespace-nowrap">Logout</span>}
           </button>
         </div>
       </aside>
