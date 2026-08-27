@@ -4,10 +4,11 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import api from '@/lib/api';
 import { Employee, PaginationMeta } from '@/lib/types';
-import { Search, Plus, Eye, Edit2, Trash2 } from 'lucide-react';
+import { Search, Plus, Eye, Edit2, Trash2, CalendarPlus } from 'lucide-react';
 import { format } from 'date-fns';
 import EmployeeFormModal from '@/components/modals/EmployeeFormModal';
 import DeleteConfirmationModal from '@/components/modals/DeleteConfirmationModal';
+import AssignShiftModal from '@/components/modals/AssignShiftModal';
 
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -19,6 +20,7 @@ export default function EmployeesPage() {
   // Modal States
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isShiftModalOpen, setIsShiftModalOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | undefined>(undefined);
 
   const fetchEmployees = async (p = 1, s = search) => {
@@ -59,6 +61,11 @@ export default function EmployeesPage() {
   const handleDeleteClick = (emp: Employee) => {
     setSelectedEmployee(emp);
     setIsDeleteModalOpen(true);
+  };
+
+  const handleAssignShiftClick = (emp: Employee) => {
+    setSelectedEmployee(emp);
+    setIsShiftModalOpen(true);
   };
 
   const handleDeleteConfirm = async () => {
@@ -144,6 +151,13 @@ export default function EmployeesPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end gap-1">
+                        <button 
+                          onClick={() => handleAssignShiftClick(emp)}
+                          title="Assign Shift"
+                          className="p-2 rounded-lg transition-colors hover:bg-slate-100 dark:hover:bg-slate-700/50 text-slate-500 hover:text-purple-600 dark:hover:text-purple-400"
+                        >
+                          <CalendarPlus size={18} />
+                        </button>
                         <Link 
                           href={`/employees/${emp.id}`} 
                           title="View Details"
@@ -202,6 +216,13 @@ export default function EmployeesPage() {
       <EmployeeFormModal 
         isOpen={isFormModalOpen}
         onClose={() => setIsFormModalOpen(false)}
+        onSuccess={() => fetchEmployees(page, search)}
+        employee={selectedEmployee}
+      />
+
+      <AssignShiftModal
+        isOpen={isShiftModalOpen}
+        onClose={() => setIsShiftModalOpen(false)}
         onSuccess={() => fetchEmployees(page, search)}
         employee={selectedEmployee}
       />
