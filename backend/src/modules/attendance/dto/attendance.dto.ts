@@ -40,6 +40,10 @@ export class AttendanceQueryDto {
   @ApiPropertyOptional() @IsOptional() page?: number = 1;
   @ApiPropertyOptional() @IsOptional() limit?: number = 20;
 
+  @ApiPropertyOptional({ example: 'John' })
+  @IsOptional() @IsString()
+  search?: string;
+
   @ApiPropertyOptional({ example: 'clx_employee_id' })
   @IsOptional() @IsString()
   employeeId?: string;

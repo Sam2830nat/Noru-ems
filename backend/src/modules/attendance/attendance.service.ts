@@ -22,6 +22,16 @@ export class AttendanceService {
       if (query.startDate) where.workDate.gte = new Date(query.startDate);
       if (query.endDate) where.workDate.lte = new Date(query.endDate);
     }
+    
+    if (query.search) {
+      where.employee = {
+        OR: [
+          { firstName: { contains: query.search, mode: 'insensitive' } },
+          { lastName: { contains: query.search, mode: 'insensitive' } },
+          { employeeNumber: { contains: query.search, mode: 'insensitive' } }
+        ]
+      };
+    }
 
     const [records, total] = await Promise.all([
       this.prisma.attendance.findMany({

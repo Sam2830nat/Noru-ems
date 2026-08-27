@@ -21,6 +21,8 @@ function AttendanceContent() {
   const [page, setPage] = useState(pageParam ? parseInt(pageParam) : 1);
   const employeeId = searchParams.get('employeeId') || '';
   const date = searchParams.get('date') || '';
+  
+  const [search, setSearch] = useState('');
 
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,7 +32,7 @@ function AttendanceContent() {
     api.get('/employees', { params: { limit: 100 } }).then(res => setEmployees(res.data.data));
   }, []);
 
-  const fetchAttendance = async (p = page) => {
+  const fetchAttendance = async (p = page, s = search) => {
     setLoading(true);
     try {
       const res = await api.get('/attendance', {
@@ -39,7 +41,8 @@ function AttendanceContent() {
           limit: 15,
           employeeId: employeeId || undefined,
           startDate: date || undefined,
-          endDate: date || undefined
+          endDate: date || undefined,
+          search: s || undefined
         }
       });
       setRecords(res.data.data);
@@ -52,8 +55,19 @@ function AttendanceContent() {
   };
 
   useEffect(() => {
-    fetchAttendance(page);
+    fetchAttendance(page, search);
   }, [page, employeeId, date]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (page !== 1) {
+        setPage(1); // changing page will trigger the other useEffect
+      } else {
+        fetchAttendance(1, search);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
@@ -74,8 +88,18 @@ function AttendanceContent() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="relative">
+        <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+            <input
+              type="text"
+              className="input pl-9"
+              placeholder="Search employee..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div className="relative w-full sm:w-auto">
             <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
             <input
               type="date"
