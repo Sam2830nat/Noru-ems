@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '@/lib/api';
 import { Department } from '@/lib/types';
-import { Plus, Edit, Trash2, UserPlus } from 'lucide-react';
+import { Plus, Edit, Trash2, UserPlus, Search } from 'lucide-react';
 import DepartmentFormModal from '@/components/modals/DepartmentFormModal';
 import AssignEmployeeToDeptModal from '@/components/modals/AssignEmployeeToDeptModal';
 import DeleteConfirmationModal from '@/components/modals/DeleteConfirmationModal';
@@ -11,6 +11,7 @@ import DeleteConfirmationModal from '@/components/modals/DeleteConfirmationModal
 export default function DepartmentsPage() {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
 
   // Modals
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -62,11 +63,23 @@ export default function DepartmentsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h2 className="text-xl font-semibold" style={{ color: 'var(--text-main)' }}>Manage Departments</h2>
-        <button onClick={handleCreate} className="btn-primary flex items-center gap-2">
-          <Plus size={18} /> Add Department
-        </button>
+        <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+            <input
+              type="text"
+              className="input pl-9"
+              placeholder="Search departments..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <button onClick={handleCreate} className="btn-primary flex items-center justify-center gap-2 w-full sm:w-auto">
+            <Plus size={18} /> Add Department
+          </button>
+        </div>
       </div>
 
       <div className="glass-card overflow-hidden">
@@ -83,10 +96,12 @@ export default function DepartmentsPage() {
             <tbody>
               {loading ? (
                 <tr><td colSpan={4} className="px-6 py-12 text-center" style={{ color: 'var(--text-muted)' }}>Loading...</td></tr>
-              ) : departments.length === 0 ? (
+              ) : departments.filter(d => d.name.toLowerCase().includes(search.toLowerCase()) || d.description?.toLowerCase().includes(search.toLowerCase())).length === 0 ? (
                 <tr><td colSpan={4} className="px-6 py-12 text-center" style={{ color: 'var(--text-muted)' }}>No departments found.</td></tr>
               ) : (
-                departments.map(dept => (
+                departments
+                  .filter(d => d.name.toLowerCase().includes(search.toLowerCase()) || d.description?.toLowerCase().includes(search.toLowerCase()))
+                  .map(dept => (
                   <tr key={dept.id} className="table-row">
                     <td className="px-6 py-4 font-medium" style={{ color: 'var(--text-main)' }}>{dept.name}</td>
                     <td className="px-6 py-4 text-sm max-w-md truncate" style={{ color: 'var(--text-muted)' }}>{dept.description || '—'}</td>

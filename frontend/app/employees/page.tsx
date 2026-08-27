@@ -47,11 +47,16 @@ export default function EmployeesPage() {
     fetchEmployees(page, search);
   }, [page]);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setPage(1);
-    fetchEmployees(1, search);
-  };
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (page !== 1) {
+        setPage(1); // changing page will trigger the other useEffect
+      } else {
+        fetchEmployees(1, search);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const handleCreate = () => {
     setSelectedEmployee(undefined);
@@ -109,7 +114,7 @@ export default function EmployeesPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <form onSubmit={handleSearch} className="relative w-full max-w-md">
+        <div className="relative w-full max-w-md">
           <Search className="absolute left-3 top-2.5 h-5 w-5 text-slate-500" />
           <input
             type="text"
@@ -118,7 +123,7 @@ export default function EmployeesPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-        </form>
+        </div>
         <button onClick={handleCreate} className="btn-primary flex items-center justify-center gap-2">
           <Plus size={18} />
           Add Employee

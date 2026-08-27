@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '@/lib/api';
 import { Role } from '@/lib/types';
-import { Plus, Edit, Trash2, UserPlus } from 'lucide-react';
+import { Plus, Edit, Trash2, UserPlus, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 import RoleFormModal from '@/components/modals/RoleFormModal';
 import AssignEmployeeToRoleModal from '@/components/modals/AssignEmployeeToRoleModal';
@@ -12,6 +12,7 @@ import DeleteConfirmationModal from '@/components/modals/DeleteConfirmationModal
 export default function RolesPage() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
 
   // Modals
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -68,11 +69,23 @@ export default function RolesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h2 className="text-xl font-semibold" style={{ color: 'var(--text-main)' }}>Manage Roles</h2>
-        <button onClick={handleCreate} className="btn-primary flex items-center gap-2">
-          <Plus size={18} /> Add Role
-        </button>
+        <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+            <input
+              type="text"
+              className="input pl-9"
+              placeholder="Search roles..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <button onClick={handleCreate} className="btn-primary flex items-center justify-center gap-2 w-full sm:w-auto">
+            <Plus size={18} /> Add Role
+          </button>
+        </div>
       </div>
 
       <div className="glass-card overflow-hidden">
@@ -89,10 +102,12 @@ export default function RolesPage() {
             <tbody>
               {loading ? (
                 <tr><td colSpan={4} className="px-6 py-12 text-center" style={{ color: 'var(--text-muted)' }}>Loading...</td></tr>
-              ) : roles.length === 0 ? (
+              ) : roles.filter(r => r.name.toLowerCase().includes(search.toLowerCase()) || r.description?.toLowerCase().includes(search.toLowerCase())).length === 0 ? (
                 <tr><td colSpan={4} className="px-6 py-12 text-center" style={{ color: 'var(--text-muted)' }}>No roles found.</td></tr>
               ) : (
-                roles.map(role => (
+                roles
+                  .filter(r => r.name.toLowerCase().includes(search.toLowerCase()) || r.description?.toLowerCase().includes(search.toLowerCase()))
+                  .map(role => (
                   <tr key={role.id} className="table-row">
                     <td className="px-6 py-4 font-medium" style={{ color: 'var(--text-main)' }}>{role.name}</td>
                     <td className="px-6 py-4 text-sm max-w-md truncate" style={{ color: 'var(--text-muted)' }}>{role.description || '—'}</td>
