@@ -5,8 +5,9 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import api from '@/lib/api';
 import { Employee, EmployeeShift, Attendance } from '@/lib/types';
-import { ArrowLeft, Edit, Trash2, Mail, Phone, Calendar as CalendarIcon, Briefcase, Building2, UserCircle } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Mail, Phone, Calendar as CalendarIcon, Briefcase, Building2 } from 'lucide-react';
 import { format } from 'date-fns';
+import AssignShiftModal from '@/components/modals/AssignShiftModal';
 
 type EmployeeDetail = Employee & {
   shifts: EmployeeShift[];
@@ -18,13 +19,18 @@ export default function EmployeeDetailPage() {
   const router = useRouter();
   const [employee, setEmployee] = useState<EmployeeDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAssignShiftOpen, setIsAssignShiftOpen] = useState(false);
 
-  useEffect(() => {
+  const fetchEmployee = () => {
     if (!params.id) return;
     api.get(`/employees/${params.id}`)
       .then(res => setEmployee(res.data.data))
       .catch(console.error)
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchEmployee();
   }, [params.id]);
 
   const handleDeactivate = async () => {
@@ -152,7 +158,12 @@ export default function EmployeeDetailPage() {
           <div className="glass-card overflow-hidden">
             <div className="p-5 border-b border-slate-700/50 flex items-center justify-between">
               <h3 className="text-lg font-semibold text-white">Upcoming & Recent Shifts</h3>
-              <button className="text-sm text-indigo-400 hover:underline">Assign shift</button>
+              <button 
+                onClick={() => setIsAssignShiftOpen(true)}
+                className="text-sm text-indigo-400 hover:underline"
+              >
+                Assign shift
+              </button>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left">
@@ -179,6 +190,13 @@ export default function EmployeeDetailPage() {
           </div>
         </div>
       </div>
+
+      <AssignShiftModal
+        isOpen={isAssignShiftOpen}
+        onClose={() => setIsAssignShiftOpen(false)}
+        onSuccess={fetchEmployee}
+        employee={employee}
+      />
     </div>
   );
 }

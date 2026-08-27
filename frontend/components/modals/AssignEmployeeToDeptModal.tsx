@@ -83,9 +83,9 @@ export default function AssignEmployeeToDeptModal({ isOpen, onClose, onSuccess, 
               onChange={e => setSelectedEmployeeId(e.target.value)}
             >
               <option value="">Select an employee...</option>
-              {employees.map(emp => (
+              {employees.filter(emp => emp.departmentId !== department.id).map(emp => (
                 <option key={emp.id} value={emp.id}>
-                  {emp.firstName} {emp.lastName} ({emp.employeeNumber}) {emp.departmentId === department.id ? '(Already in this dept)' : ''}
+                  {emp.firstName} {emp.lastName} ({emp.employeeNumber})
                 </option>
               ))}
             </select>

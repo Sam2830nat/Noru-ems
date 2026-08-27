@@ -81,9 +81,9 @@ export default function AssignEmployeeToRoleModal({ isOpen, onClose, onSuccess, 
               onChange={e => setSelectedEmployeeId(e.target.value)}
             >
               <option value="">Select an employee...</option>
-              {employees.map(emp => (
+              {employees.filter(emp => emp.roleId !== role.id).map(emp => (
                 <option key={emp.id} value={emp.id}>
-                  {emp.firstName} {emp.lastName} ({emp.employeeNumber}) {emp.roleId === role.id ? '(Already in this role)' : ''}
+                  {emp.firstName} {emp.lastName} ({emp.employeeNumber})
                 </option>
               ))}
             </select>
