@@ -96,7 +96,8 @@ export default function EmployeeFormModal({ isOpen, onClose, onSuccess, employee
         });
         setErrors(fieldErrors);
       } else {
-        setErrors({ general: error.response?.data?.message || 'Something went wrong.' });
+        const msg = error.response?.data?.message || 'Something went wrong.';
+        toast.error(msg);
       }
     } finally {
       setLoading(false);
@@ -117,12 +118,6 @@ export default function EmployeeFormModal({ isOpen, onClose, onSuccess, employee
         </div>
 
         <div className="flex-1 overflow-y-auto p-6">
-          {errors.general && (
-            <div className="mb-4 p-3 rounded-lg bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-sm">
-              {errors.general}
-            </div>
-          )}
-
           <form id="employee-form" onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>

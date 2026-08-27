@@ -58,7 +58,8 @@ export default function AssignShiftModal({ isOpen, onClose, onSuccess, employee 
         });
         setErrors(fieldErrors);
       } else {
-        setErrors({ general: error.response?.data?.message || 'Failed to assign shift.' });
+        const msg = error.response?.data?.message || 'Failed to assign shift.';
+        toast.error(msg);
       }
     } finally {
       setLoading(false);
@@ -83,12 +84,6 @@ export default function AssignShiftModal({ isOpen, onClose, onSuccess, employee 
             <X size={20} />
           </button>
         </div>
-
-        {errors.general && (
-          <div className="mb-4 p-3 rounded-lg bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-sm">
-            {errors.general}
-          </div>
-        )}
 
         <form id="assign-shift-form" onSubmit={handleSubmit} className="space-y-4">
           <div>

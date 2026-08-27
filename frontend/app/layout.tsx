@@ -37,6 +37,17 @@ export default function RootLayout({
               secondary: 'white',
             },
           },
+          error: {
+            style: {
+              background: '#ef4444',
+              color: 'white',
+              border: 'none',
+            },
+            iconTheme: {
+              primary: 'white',
+              secondary: '#ef4444',
+            },
+          },
         }} />
       </body>
     </html>

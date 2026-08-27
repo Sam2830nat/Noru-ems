@@ -48,7 +48,8 @@ export default function AssignEmployeeToDeptModal({ isOpen, onClose, onSuccess, 
       onSuccess();
       onClose();
     } catch (error: any) {
-      setErrors({ general: error.response?.data?.message || 'Failed to assign employee.' });
+      const msg = error.response?.data?.message || 'Failed to assign employee.';
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -72,12 +73,6 @@ export default function AssignEmployeeToDeptModal({ isOpen, onClose, onSuccess, 
             <X size={20} />
           </button>
         </div>
-
-        {errors.general && (
-          <div className="mb-4 p-3 rounded-lg bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-sm">
-            {errors.general}
-          </div>
-        )}
 
         <form id="assign-employee-form" onSubmit={handleSubmit} className="space-y-4">
           <div>

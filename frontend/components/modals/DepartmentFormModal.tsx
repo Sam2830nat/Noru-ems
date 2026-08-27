@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import api from '@/lib/api';
 import { Department } from '@/lib/types';
 
@@ -60,7 +61,8 @@ export default function DepartmentFormModal({ isOpen, onClose, onSuccess, depart
         });
         setErrors(fieldErrors);
       } else {
-        setErrors({ general: error.response?.data?.message || 'Failed to save department.' });
+        const msg = error.response?.data?.message || 'Failed to save department.';
+        toast.error(msg);
       }
     } finally {
       setLoading(false);
@@ -81,12 +83,6 @@ export default function DepartmentFormModal({ isOpen, onClose, onSuccess, depart
         </div>
 
         <div className="p-6">
-          {errors.general && (
-            <div className="mb-4 p-3 rounded-lg bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-sm">
-              {errors.general}
-            </div>
-          )}
-
           <form id="dept-form" onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="label">Department Name</label>
